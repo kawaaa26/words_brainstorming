@@ -8,7 +8,7 @@ puts "\n\nType 1: Disable Headless\nHit Enter: Enable Headless"
 
 mode_selection = gets.to_i
 
-# IdeaMaking drawing 2 random words to throw source of brainstoming.
+# IdeaMaking drawing 2 random words to throw source of brainstorming.
 class IdeaMaking
   def initialize(option)
 
