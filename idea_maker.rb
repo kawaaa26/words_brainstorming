@@ -48,6 +48,7 @@ class IdeaMaking
     first_word = @driver.find_element(:id, 'show_txt1').text
     second_word = @driver.find_element(:id, 'show_txt2').text
     # @wait.until {second_word.displayed?}
+    # words appear so slowly and thus @wait doesn't work properly.
 
     CE.once.fg @white
     CE.once.bg @orange
