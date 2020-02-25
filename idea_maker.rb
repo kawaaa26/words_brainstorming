@@ -11,7 +11,6 @@ mode_selection = gets.to_i
 # IdeaMaking drawing 2 random words to throw source of brainstorming.
 class IdeaMaking
   def initialize(option)
-
     @options = Selenium::WebDriver::Chrome::Options.new
 
     if option == 1
@@ -53,8 +52,32 @@ class IdeaMaking
     CE.once.fg @white
     CE.once.bg @orange
     puts "\n #{first_word} * #{second_word} = ?? "
+
+    [first_word, second_word]
+  end
+
+  def google(search_words)
+    # creating two tabs here.
+    2.times { @driver.execute_script('window.open()') }
+
+    tabs = @driver.window_handles
+    new_tabs = tabs[1, 2]
+
+    i = 0
+    new_tabs.each do |tab|
+      @driver.switch_to.window(tab)
+      @driver.get('https://www.google.com/')
+      search_box = @driver.find_element(:name, 'q')
+      search_box.send_keys(search_words[i])
+      search_box.submit
+      i = i.succ
+
+      CE.once.fg @orange
+      puts "\nURL #{i}: #{@driver.current_url}"
+    end
   end
 end
 
 idea_making = IdeaMaking.new(mode_selection)
-idea_making.words_choice
+words = idea_making.words_choice
+idea_making.google(words)
