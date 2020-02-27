@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 require 'color_echo'
+require 'dotenv/load'
 require 'webdrivers'
+require 'slack-notify'
 
 CE.once.fg :index203
 puts "\n\nType 1: Disable Headless\nHit Enter: Enable Headless"
@@ -27,14 +29,22 @@ class IdeaMaking
     @wait = Selenium::WebDriver::Wait.new(timeout: 100)
     @orange = :index203
     @white = :white
+
+    @client = SlackNotify::Client.new(
+      webhook_url: ENV['WEBHOOK_URL'],
+      # channel: '#notification',
+      channel: ENV['SLACK_CHANNEL'],
+      username: 'TopicBOT',
+      icon_url: 'http://mydomain.com/myimage.png',
+      icon_emoji: ':shipit:',
+      link_names: 1
+    )
   end
 
   def words_choice
     @driver.get 'https://tango-gacha.com/'
-    check_boxes = @driver.find_elements(:class, 'box')
 
-    check_boxes[3].click
-    check_boxes[4].click
+    @driver.find_elements(:class, 'box')[3, 4].map(&:click)
 
     word_volume = @driver.find_element(:id, 'word_volume')
     select = Selenium::WebDriver::Support::Select.new(word_volume)
@@ -61,24 +71,31 @@ class IdeaMaking
     # creating two tabs here.
     2.times { @driver.execute_script('window.open()') }
 
-    tabs = @driver.window_handles
-    new_tabs = tabs[1, 2]
+    tabs = @driver.window_handles[1, 2]
 
     i = 0
-    new_tabs.each do |tab|
+    details = []
+    tabs.each do |tab|
       @driver.switch_to.window(tab)
       @driver.get('https://www.google.com/')
       search_box = @driver.find_element(:name, 'q')
       search_box.send_keys(search_words[i])
       search_box.submit
-      i = i.succ
 
       CE.once.fg @orange
-      puts "\nURL #{i}: #{@driver.current_url}"
+      details << "\nURL #{i = i.succ}: #{@driver.current_url}"
     end
+    puts details
+
+    details = details.each.with_index(1).map { |key, val| [val, key] }.to_h
+  end
+
+  def slack_notification(details)
+    @client.notify("@channel\n*Topics Generated*\n#{details[1]}\n#{details[2]}")
   end
 end
 
 idea_making = IdeaMaking.new(mode_selection)
 words = idea_making.words_choice
-idea_making.google(words)
+google = idea_making.google(words)
+idea_making.slack_notification(google)
