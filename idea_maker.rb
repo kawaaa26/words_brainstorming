@@ -83,7 +83,7 @@ class IdeaMaking
       search_box.submit
 
       CE.once.fg @orange
-      details << "\nURL #{i = i.succ}: #{@driver.current_url}"
+      details << "\n*`#{search_words[i]}`*\nURL #{i = i.succ}: #{@driver.current_url}"
     end
     puts details
 
